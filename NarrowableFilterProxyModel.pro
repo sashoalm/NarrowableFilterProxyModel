@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    narrowablefilterproxymodel.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    narrowablefilterproxymodel.h
 
 FORMS    += mainwindow.ui

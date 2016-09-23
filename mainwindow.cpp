@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "narrowablefilterproxymodel.h"
 #include "ui_mainwindow.h"
 
 #include <QSortFilterProxyModel>
@@ -33,10 +34,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QStringListModel *model = new QStringListModel(this);
     model->setStringList(list);
 
-    QSortFilterProxyModel *filter = new MyFilter(this);
-    filter->setSourceModel(model);
-
+    NarrowableFilterProxyModel *filter = new NarrowableFilterProxyModel(this);
     ui->listView->setModel(filter);
+
+    // Test that we reapply the filters on source changed by applying
+    // them **before** setting the source model.
+    ui->lineEdit->setText("1");
+    ui->lineEdit->setText("11");
+    ui->lineEdit->setText("111");
+    filter->setSourceModel(model);
 }
 
 MainWindow::~MainWindow()
@@ -46,8 +52,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_lineEdit_textChanged(const QString &text)
 {
-    MyFilter *filter = (MyFilter*) ui->listView->model();
-    filter->resetCounter();
+    NarrowableFilterProxyModel *filter = (NarrowableFilterProxyModel*) ui->listView->model();
     filter->setFilterFixedString(text);
-    qDebug("%d", filter->getCounter());
 }
