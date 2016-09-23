@@ -20,6 +20,19 @@ private:
     mutable int counter;
 };
 
+class MyFilterFactory : public NarrowableFilterProxyModel::IFilterFactory
+{
+    QSortFilterProxyModel *createFilter(QObject *parent)
+    {
+        lastCreatedFilter = new MyFilter(parent);
+        return lastCreatedFilter;
+    }
+
+public:
+    MyFilterFactory() { lastCreatedFilter = 0; }
+    MyFilter *lastCreatedFilter;
+};
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -37,16 +50,21 @@ MainWindow::MainWindow(QWidget *parent) :
     NarrowableFilterProxyModel *filter = new NarrowableFilterProxyModel(this);
     ui->listView->setModel(filter);
 
+    factory = new MyFilterFactory();
+
     // Test that we reapply the filters on source changed by applying
     // them **before** setting the source model.
     ui->lineEdit->setText("1");
     ui->lineEdit->setText("11");
     ui->lineEdit->setText("111");
     filter->setSourceModel(model);
+
+    filter->setFilterFactory(factory);
 }
 
 MainWindow::~MainWindow()
 {
+    delete factory;
     delete ui;
 }
 
@@ -54,4 +72,7 @@ void MainWindow::on_lineEdit_textChanged(const QString &text)
 {
     NarrowableFilterProxyModel *filter = (NarrowableFilterProxyModel*) ui->listView->model();
     filter->setFilterFixedString(text);
+    if (factory->lastCreatedFilter) {
+        qDebug("%d", factory->lastCreatedFilter->getCounter());
+    }
 }

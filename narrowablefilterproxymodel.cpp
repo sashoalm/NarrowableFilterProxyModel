@@ -6,6 +6,7 @@ NarrowableFilterProxyModel::NarrowableFilterProxyModel(QObject *parent)
     : QIdentityProxyModel(parent)
 {
     realSourceModel = 0;
+    factory = 0;
 }
 
 NarrowableFilterProxyModel::~NarrowableFilterProxyModel()
@@ -29,9 +30,19 @@ void NarrowableFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     }
 }
 
+void NarrowableFilterProxyModel::setFilterFactory(NarrowableFilterProxyModel::IFilterFactory *factory)
+{
+    this->factory = factory;
+}
+
 void NarrowableFilterProxyModel::setFilterFixedString(const QString &s)
 {
-    QSortFilterProxyModel *model = new QSortFilterProxyModel(this);
+    QSortFilterProxyModel *model;
+    if (factory) {
+        model = factory->createFilter(this);
+    } else {
+        model = new QSortFilterProxyModel(this);
+    }
     model->setFilterFixedString(s);
 
     QAbstractItemModel *topModel = realSourceModel;

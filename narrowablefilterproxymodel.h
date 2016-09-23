@@ -19,6 +19,17 @@ public:
     /// realSourceModel.
     void setSourceModel(QAbstractItemModel *sourceModel);
 
+    class IFilterFactory
+    {
+    public:
+        virtual QSortFilterProxyModel *createFilter(QObject *parent = 0) = 0;
+    };
+
+    /// We use a filter factory so our class can work with classes inheriting
+    /// from QSortFilterProxyModel, which can specialize filterAcceptsRows(),
+    /// for example.
+    void setFilterFactory(IFilterFactory *factory);
+
 private:
     // This is the stack of chained filters.
     QStack<QSortFilterProxyModel*> filters;
@@ -26,6 +37,8 @@ private:
     // The base class's source model needs to point to the last filter model,
     // so we need a new variable to hold the **actual** source.
     QAbstractItemModel *realSourceModel;
+
+    IFilterFactory *factory;
 };
 
 #endif // NARROWABLEFILTERPROXYMODEL_H
