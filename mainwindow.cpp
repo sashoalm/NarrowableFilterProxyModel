@@ -4,6 +4,21 @@
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
 
+class MyFilter : public QSortFilterProxyModel
+{
+public:
+    MyFilter(QObject *parent = 0) : QSortFilterProxyModel(parent) { counter = 0; }
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+    {
+        counter++;
+        return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+    }
+    void resetCounter() { counter = 0; }
+    int getCounter() const { return counter; }
+private:
+    mutable int counter;
+};
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -18,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QStringListModel *model = new QStringListModel(this);
     model->setStringList(list);
 
-    QSortFilterProxyModel *filter = new QSortFilterProxyModel(this);
+    QSortFilterProxyModel *filter = new MyFilter(this);
     filter->setSourceModel(model);
 
     ui->listView->setModel(filter);
@@ -31,6 +46,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_lineEdit_textChanged(const QString &text)
 {
-    QSortFilterProxyModel *filter = (QSortFilterProxyModel*) ui->listView->model();
+    MyFilter *filter = (MyFilter*) ui->listView->model();
+    filter->resetCounter();
     filter->setFilterFixedString(text);
+    qDebug("%d", filter->getCounter());
 }
