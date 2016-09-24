@@ -14,9 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    narrowablefilterproxymodel.cpp
+    narrowablefilterproxymodel.cpp \
+    abstractproxychainmodel.cpp
 
 HEADERS  += mainwindow.h \
-    narrowablefilterproxymodel.h
+    narrowablefilterproxymodel.h \
+    abstractproxychainmodel.h
 
 FORMS    += mainwindow.ui

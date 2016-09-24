@@ -3,10 +3,9 @@
 #include <QSortFilterProxyModel>
 
 NarrowableFilterProxyModel::NarrowableFilterProxyModel(QObject *parent)
-    : QIdentityProxyModel(parent)
+    : AbstractProxyChainModel(parent)
 {
-    realSourceModel = 0;
-    factory = 0;
+
 }
 
 NarrowableFilterProxyModel::~NarrowableFilterProxyModel()
@@ -14,48 +13,28 @@ NarrowableFilterProxyModel::~NarrowableFilterProxyModel()
 
 }
 
-void NarrowableFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
+NarrowableFilterProxyModel::RelationType NarrowableFilterProxyModel::relationTo(QAbstractProxyModel *model, QAbstractProxyModel *sourceModel)
 {
-    realSourceModel = sourceModel;
-
-    // QSortFilterProxyModel doesn't discard its filter on source model change, instead
-    // it just reapplies it. We want to mimic that behavior. Filters have a source changed
-    // event/signal, so it's enough to set the bottom-most filter in tha stack to the new
-    // source model and the change will propagade all the way through to the top-most
-    // filter.
-    if (!filters.isEmpty()) {
-        filters.front()->setSourceModel(realSourceModel);
+    QSortFilterProxyModel *filter = (QSortFilterProxyModel *) model;
+    QSortFilterProxyModel *sourceFilter = (QSortFilterProxyModel *) sourceModel;
+    const QString &pattern = filter->filterRegExp().pattern();
+    const QString &sourcePattern = sourceFilter->filterRegExp().pattern();
+    if (pattern == sourcePattern) {
+        return Identical;
+    } else if (pattern.contains(sourcePattern)) {
+        return Narrower;
     } else {
-        QIdentityProxyModel::setSourceModel(realSourceModel);
+        return Different;
     }
-}
-
-void NarrowableFilterProxyModel::setFilterFactory(NarrowableFilterProxyModel::IFilterFactory *factory)
-{
-    this->factory = factory;
 }
 
 void NarrowableFilterProxyModel::setFilterFixedString(const QString &s)
 {
-    QSortFilterProxyModel *model;
-    if (factory) {
-        model = factory->createFilter(this);
+    if (s.isEmpty()) {
+        clearChain();
     } else {
-        model = new QSortFilterProxyModel(this);
+        QSortFilterProxyModel *model = new QSortFilterProxyModel(this);
+        model->setFilterFixedString(s);
+        addToChain(model);
     }
-    model->setFilterFixedString(s);
-
-    QAbstractItemModel *topModel = realSourceModel;
-    while (!filters.isEmpty()) {
-        if (s.contains(filters.top()->filterRegExp().pattern())) {
-            topModel = filters.top();
-            break;
-        } else {
-            delete filters.pop();
-        }
-    }
-
-    model->setSourceModel(topModel);
-    QIdentityProxyModel::setSourceModel(model);
-    filters.push(model);
 }
