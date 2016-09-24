@@ -14,6 +14,8 @@ public:
     /// Like QSortFilterProxyModel's function.
     void setFilterFixedString(const QString &s);
 
+    void printRowCounts() const;
+
 private:
     typedef AbstractProxyChainModel::RelationType RelationType;
     RelationType relationTo(QAbstractProxyModel *model, QAbstractProxyModel *sourceModel);

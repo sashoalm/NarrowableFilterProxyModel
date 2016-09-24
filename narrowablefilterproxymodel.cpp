@@ -1,6 +1,7 @@
 #include "narrowablefilterproxymodel.h"
 
 #include <QSortFilterProxyModel>
+#include <QDebug>
 
 NarrowableFilterProxyModel::NarrowableFilterProxyModel(QObject *parent)
     : AbstractProxyChainModel(parent)
@@ -36,5 +37,16 @@ void NarrowableFilterProxyModel::setFilterFixedString(const QString &s)
         QSortFilterProxyModel *model = new QSortFilterProxyModel(this);
         model->setFilterFixedString(s);
         addToChain(model);
+    }
+}
+
+void NarrowableFilterProxyModel::printRowCounts() const
+{
+    const QSortFilterProxyModel *model = qobject_cast<QSortFilterProxyModel *>(sourceModel());
+    QDebug dbg = qDebug();
+    dbg << "row count:";
+    while (model) {
+        dbg << model->filterRegExp().pattern() << model->rowCount();
+        model = qobject_cast<QSortFilterProxyModel *>(model->sourceModel());
     }
 }

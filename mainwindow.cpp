@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit->setText("11");
     ui->lineEdit->setText("111");
     filter->setSourceModel(model);
+    filter->printRowCounts();
 }
 
 MainWindow::~MainWindow()
@@ -39,4 +40,5 @@ void MainWindow::on_lineEdit_textChanged(const QString &text)
 {
     NarrowableFilterProxyModel *filter = (NarrowableFilterProxyModel*) ui->listView->model();
     filter->setFilterFixedString(text);
+    filter->printRowCounts();
 }
